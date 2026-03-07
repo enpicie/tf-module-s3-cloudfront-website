@@ -1,0 +1,19 @@
+output "cloudfront_domain_name" {
+  description = "CloudFront distribution domain — use this as your website URL"
+  value       = module.cloudfront.cloudfront_distribution_domain_name
+}
+
+output "s3_bucket_id" {
+  description = "S3 bucket name"
+  value       = module.s3_website.static_website_id
+}
+
+output "s3_bucket_arn" {
+  description = "S3 bucket ARN"
+  value       = module.s3_website.static_website_arn
+}
+
+output "cloudfront_distribution_arn" {
+  description = "CloudFront distribution ARN"
+  value       = module.cloudfront.cloudfront_distribution_arn
+}

@@ -23,22 +23,3 @@ resource "aws_s3_bucket_public_access_block" "static_site_bucket_public_access" 
   restrict_public_buckets = true
 }
 
-####################################################
-# Upload website files
-####################################################
-module "template_files" {
-  source   = "hashicorp/dir/template"
-  base_dir = var.source_files
-}
-
-resource "aws_s3_object" "hosting_bucket_files" {
-  bucket = aws_s3_bucket.s3-static-website.id
-
-  for_each = module.template_files.files
-
-  key          = each.key
-  content_type = each.value.content_type
-  source       = each.value.source_path
-  content      = each.value.content
-  etag         = each.value.digests.md5
-}

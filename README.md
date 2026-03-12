@@ -1,6 +1,8 @@
 # tf-module-s3-cloudfront-website
 
-Terraform module that deploys a static website (e.g. a React/Vite app) to AWS S3 with a CloudFront distribution as the frontend.
+Terraform module that provisions the AWS infrastructure for a static website (e.g. a React/Vite app) — an S3 bucket fronted by a CloudFront distribution.
+
+> **Note:** This module provisions infrastructure only. Uploading build artifacts to S3 is handled outside of this module (e.g. via a CI/CD pipeline or a separate deployment step).
 
 Derived from [Collin Smith's Medium post](https://collin-smith.medium.com/creating-a-simple-vite-react-front-end-application-hosted-in-s3-and-cloudfront-with-terraform-0526479502e3) on this architecture.
 
@@ -25,7 +27,6 @@ Browser → CloudFront (HTTPS) → S3 (private bucket)
 |----------|------|-------------|
 | `aws_s3_bucket` | `aws_s3_bucket` | Private bucket that stores the website files |
 | `aws_s3_bucket_public_access_block` | `aws_s3_bucket_public_access_block` | Blocks all public access — CloudFront is the only entry point |
-| `aws_s3_object` (one per file) | `aws_s3_object` | Website files uploaded from `source_files` with correct `Content-Type` headers |
 | `aws_cloudfront_origin_access_control` | `aws_cloudfront_origin_access_control` | OAC that signs CloudFront requests to S3 using SigV4 |
 | `aws_cloudfront_distribution` | `aws_cloudfront_distribution` | CDN distribution; enforces HTTPS, serves `index.html` as default root, redirects 403s to `index.html` for SPA routing |
 | `aws_s3_bucket_policy` | `aws_s3_bucket_policy` | IAM policy scoped to the CloudFront distribution ARN, granting `s3:GetObject` to CloudFront only |
@@ -39,7 +40,6 @@ module "website" {
   source = "path/to/tf-module-s3-cloudfront-website"
 
   website_name = "my-react-app"
-  source_files = "./dist"
 
   common_tags = {
     Project     = "my-react-app"
@@ -52,12 +52,15 @@ output "url" {
 }
 ```
 
-Build your app first, then run Terraform:
-
 ```bash
-npm run build          # or: yarn build / pnpm build
 terraform init
 terraform apply
+```
+
+After apply, upload your build artifacts to the S3 bucket separately (e.g. via AWS CLI in a CI/CD pipeline):
+
+```bash
+aws s3 sync ./dist s3://$(terraform output -raw s3_bucket_id) --delete
 ```
 
 ---
@@ -67,7 +70,6 @@ terraform apply
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|----------|
 | `website_name` | Name used for the S3 bucket and as a naming prefix for all resources | `string` | — | yes |
-| `source_files` | Path to the static website build output directory (e.g. `./dist`) | `string` | — | yes |
 | `common_tags` | Tags to apply to all resources | `map(string)` | `{}` | no |
 | `domain_name` | Custom domain name (e.g. `app.example.com`). Required if `acm_certificate_arn` is set. | `string` | `null` | no |
 | `acm_certificate_arn` | ACM certificate ARN for the custom domain. **Must be in `us-east-1`** regardless of your stack region. | `string` | `null` | no |
@@ -125,7 +127,6 @@ module "website" {
   source = "path/to/tf-module-s3-cloudfront-website"
 
   website_name        = "my-react-app"
-  source_files        = "./dist"
   domain_name         = "app.example.com"
   acm_certificate_arn = aws_acm_certificate_validation.cert.certificate_arn
 }
@@ -141,7 +142,7 @@ module "website" {
 ├── variables.tf
 ├── outputs.tf
 └── modules/
-    ├── s3-static-website/           # S3 bucket + file upload
+    ├── s3-static-website/           # S3 bucket (file upload is external)
     ├── cloud-front/                 # CloudFront distribution + OAC
     └── s3-cf-policy/                # Bucket policy granting CloudFront access
 ```

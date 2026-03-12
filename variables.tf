@@ -3,11 +3,6 @@ variable "website_name" {
   type        = string
 }
 
-variable "source_files" {
-  description = "Path to the static website build output directory (e.g. ./dist)"
-  type        = string
-}
-
 variable "common_tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

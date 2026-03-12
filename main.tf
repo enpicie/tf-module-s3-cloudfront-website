@@ -1,8 +1,7 @@
 module "s3_website" {
   source       = "./modules/s3-static-website"
-  bucket_name  = var.website_name
-  source_files = var.source_files
-  common_tags  = var.common_tags
+  bucket_name = var.website_name
+  common_tags = var.common_tags
 }
 
 module "cloudfront" {

@@ -4,8 +4,13 @@ output "cloudfront_domain_name" {
 }
 
 output "s3_bucket_id" {
-  description = "S3 bucket name"
+  description = "S3 bucket id"
   value       = module.s3_website.static_website_id
+}
+
+output "bucket_name" {
+  description = "S3 bucket name"
+  value       = module.s3_website.bucket_name
 }
 
 output "s3_bucket_arn" {

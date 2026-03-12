@@ -19,6 +19,19 @@ Browser → CloudFront (HTTPS) → S3 (private bucket)
 
 ---
 
+## Resources provisioned
+
+| Resource | Type | Description |
+|----------|------|-------------|
+| `aws_s3_bucket` | `aws_s3_bucket` | Private bucket that stores the website files |
+| `aws_s3_bucket_public_access_block` | `aws_s3_bucket_public_access_block` | Blocks all public access — CloudFront is the only entry point |
+| `aws_s3_object` (one per file) | `aws_s3_object` | Website files uploaded from `source_files` with correct `Content-Type` headers |
+| `aws_cloudfront_origin_access_control` | `aws_cloudfront_origin_access_control` | OAC that signs CloudFront requests to S3 using SigV4 |
+| `aws_cloudfront_distribution` | `aws_cloudfront_distribution` | CDN distribution; enforces HTTPS, serves `index.html` as default root, redirects 403s to `index.html` for SPA routing |
+| `aws_s3_bucket_policy` | `aws_s3_bucket_policy` | IAM policy scoped to the CloudFront distribution ARN, granting `s3:GetObject` to CloudFront only |
+
+---
+
 ## Usage
 
 ```hcl

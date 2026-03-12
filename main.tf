@@ -11,6 +11,8 @@ module "cloudfront" {
   s3_bucket_domain_name = module.s3_website.static_website_regional_domain_name
   naming_prefix         = var.website_name
   common_tags           = var.common_tags
+  domain_name           = var.domain_name
+  acm_certificate_arn   = var.acm_certificate_arn
 }
 
 module "s3_cf_policy" {

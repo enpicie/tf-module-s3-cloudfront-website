@@ -17,3 +17,8 @@ output "cloudfront_distribution_arn" {
   description = "CloudFront distribution ARN"
   value       = module.cloudfront.cloudfront_distribution_arn
 }
+
+output "cloudfront_hosted_zone_id" {
+  description = "CloudFront hosted zone ID — use this for Route53 alias records in your DNS repo"
+  value       = module.cloudfront.cloudfront_hosted_zone_id
+}
